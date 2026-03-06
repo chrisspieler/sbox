@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if WIN
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Speech.AudioFormat;
@@ -9,7 +10,7 @@ namespace Sandbox.Speech;
 /// <summary>
 /// A speech synthesis stream. Lets you write text into speech and output it to a <see cref="SoundHandle"/>.
 /// </summary>
-public sealed class Synthesizer
+public sealed partial class Synthesizer
 {
 	public record struct InstalledVoice( string Name, string Gender, string Age );
 
@@ -242,3 +243,4 @@ public sealed class Synthesizer
 	}
 
 }
+#endif

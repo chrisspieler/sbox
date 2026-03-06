@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if WIN
+using System;
 using System.Speech.Recognition;
 
 namespace Sandbox.Speech;
@@ -169,3 +170,4 @@ public static class Recognition
 		IsListening = false;
 	}
 }
+#endif
