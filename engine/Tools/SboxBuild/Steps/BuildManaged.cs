@@ -30,10 +30,6 @@ internal class BuildManaged( string name, bool clean = false ) : Step( name )
 			if ( !Utility.RunDotnetCommand( engineDir, "build Tools/CodeGen/ -o Tools/CodeGen/bin" ) )
 				return ExitCode.Failure;
 
-			Log.Info( "Step 3a: Build CreateGameCache.exe" );
-			if ( !Utility.RunDotnetCommand( engineDir, "build Tools/CreateGameCache/ -o Tools/CreateGameCache/bin" ) )
-				return ExitCode.Failure;
-
 			Log.Info( "Step 4: Clear managed folder" );
 			string managedDir = Path.Combine( rootDir, "game", "bin", "managed" );
 			if ( Directory.Exists( managedDir ) )

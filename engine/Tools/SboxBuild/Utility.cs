@@ -138,37 +138,4 @@ internal static class Utility
 
 		return versionName;
 	}
-
-	public static bool IsCi()
-	{
-		return Environment.GetEnvironmentVariable( "GITHUB_ACTIONS" ) != null;
-	}
-
-	public static string CalculateSha256( string filePath )
-	{
-		using var sha256 = SHA256.Create();
-		using var stream = File.OpenRead( filePath );
-		var hash = sha256.ComputeHash( stream );
-		return Convert.ToHexString( hash ).ToLowerInvariant();
-	}
-
-	public static string FormatSize( long bytes )
-	{
-		if ( bytes <= 0 )
-		{
-			return "0 B";
-		}
-
-		string[] units = { "B", "KB", "MB", "GB", "TB", "PB" };
-		var size = (double)bytes;
-		var unitIndex = 0;
-
-		while ( size >= 1024 && unitIndex < units.Length - 1 )
-		{
-			size /= 1024;
-			unitIndex++;
-		}
-
-		return $"{size:0.##} {units[unitIndex]}";
-	}
 }

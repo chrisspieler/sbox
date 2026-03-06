@@ -49,14 +49,4 @@ internal static class Constants
 				throw new ArgumentOutOfRangeException( nameof( solution ), solution, null );
 		}
 	}
-
-	internal static string BuildTargetToSteamBranch( BuildTarget target )
-	{
-		return target switch
-		{
-			BuildTarget.Staging => "staging",
-			BuildTarget.Release => "release",
-			_ => throw new ArgumentOutOfRangeException( nameof( target ), target, null )
-		};
-	}
 }
