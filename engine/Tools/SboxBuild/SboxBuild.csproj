@@ -22,7 +22,6 @@
 
   <ItemGroup>
 	<ProjectReference Include="..\InteropGen\InteropGen.csproj" />
-	<ProjectReference Include="..\ShaderProc\ShaderProc.csproj" />
   </ItemGroup>
 
    <ItemGroup>

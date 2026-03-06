@@ -13,8 +13,8 @@ internal class Build
 	{
 		var builder = new PipelineBuilder( "Build" );
 
-		// Always add interop gen
-		builder.AddStep( new Steps.InteropGen( "Interop Gen", skipNative ) );
+		// Skip InteropGen for now.
+		// builder.AddStep( new Steps.InteropGen( "Interop Gen", skipNative ) );
 
 		// Add native build step if not skipped
 		if ( !skipNative )
