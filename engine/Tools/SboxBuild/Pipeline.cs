@@ -148,8 +148,6 @@ internal class PipelineBuilder
 	private readonly List<Step> steps = new();
 	private readonly Dictionary<Step, bool> continueOnFailure = new();
 	private readonly string name;
-	private bool enableSlackNotifications = false;
-	private string slackWebhookUrl = null;
 
 	public PipelineBuilder( string name )
 	{
