@@ -9,5 +9,4 @@
   </Folder>
   <Project Path="InteropGen/InteropGen.csproj" />
   <Project Path="SboxBuild/SboxBuild.csproj" />
-  <Project Path="ShaderProc/ShaderProc.csproj" />
 </Solution>
