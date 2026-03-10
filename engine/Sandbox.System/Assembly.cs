@@ -19,7 +19,6 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo( "Sandbox.Reflection" )]
 [assembly: InternalsVisibleTo( "Sandbox.Menu" )]
 [assembly: InternalsVisibleTo( "Sandbox.GameInstance" )]
-[assembly: InternalsVisibleTo( "Facepunch.Interopgen" )]
 [assembly: InternalsVisibleTo( "Sandbox.AppSystem" )]
 [assembly: InternalsVisibleTo( "Sbox-Server" )]
 

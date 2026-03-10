@@ -279,21 +279,11 @@ public class AppSystem
 
 		_appSystem.SetSteamAppId( (uint)Application.AppId );
 
-		if ( !NativeEngine.EngineGlobal.SourceEnginePreInit( commandLine, _appSystem ) )
-		{
-			throw new System.Exception( "SourceEnginePreInit failed" );
-		}
-
 		Bootstrap.PreInit( _appSystem );
 
 		if ( createInfo.Flags.HasFlag( AppSystemFlags.IsStandaloneGame ) )
 		{
 			Standalone.Init();
-		}
-
-		if ( !NativeEngine.EngineGlobal.SourceEngineInit( _appSystem ) )
-		{
-			throw new System.Exception( "SourceEngineInit returned false" );
 		}
 
 		Bootstrap.Init();
@@ -302,25 +292,5 @@ public class AppSystem
 	protected void SetWindowTitle( string title )
 	{
 		_appSystem.SetAppWindowTitle( title );
-	}
-
-	IntPtr steamApiDll = IntPtr.Zero;
-
-	/// <summary>
-	/// Explicitly load the Steam Api dll from our bin folder, so that it doesn't accidentally
-	/// load one from c:\system32\ or something. This is a problem when people have installed
-	/// pirate versions of Steam in the past and have the assembly hanging around still. By loading
-	/// it here we're saying use this version, and it won't try to load another one.
-	/// </summary>
-	protected void LoadSteamDll()
-	{
-		if ( !OperatingSystem.IsWindows() )
-			return;
-
-		var dllName = $"{Environment.CurrentDirectory}\\bin\\win64\\steam_api64.dll";
-		if ( !NativeLibrary.TryLoad( dllName, out steamApiDll ) )
-		{
-			throw new System.Exception( "Couldn't load bin/win64/steam_api64.dll" );
-		}
 	}
 }

@@ -1,5 +1,4 @@
-﻿using NativeEngine;
-using Sandbox.Internal;
+﻿using Sandbox.Internal;
 using System;
 
 namespace Editor;
@@ -22,13 +21,6 @@ internal static class ManagedTools
 	public static void InitStart()
 	{
 		Log.Info( $"Editor Startup version {Sandbox.Application.Version}" );
-		//
-		// Init steam and log into the api
-		//
-		{
-			Steamworks.SteamClient.Init( (int)Sandbox.Application.AppId );
-			AccountLoginTask = AccountInformation.Update();
-		}
 
 		InitFilesystem();
 
@@ -84,12 +76,6 @@ internal static class ManagedTools
 		{
 			Sandbox.Engine.IToolsDll.Current?.Spin();
 			System.Threading.Thread.Sleep( 16 );
-		}
-
-		// If the avatar was found on the backend, replace the cookie one
-		if ( !string.IsNullOrWhiteSpace( AccountInformation.AvatarJson ) )
-		{
-			Avatar.AvatarJson = AccountInformation.AvatarJson;
 		}
 	}
 

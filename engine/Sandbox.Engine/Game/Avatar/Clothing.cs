@@ -230,16 +230,6 @@ public sealed partial class Clothing : GameResource
 	[Category( "Steam Inventory" )]
 	public int? SteamItemDefinitionId { get; set; }
 
-	/// <summary>
-	/// Can we wear this item?
-	/// </summary>
-	public bool HasPermissions()
-	{
-		if ( !SteamItemDefinitionId.HasValue ) return true;
-
-		return Sandbox.Services.Inventory.HasItem( SteamItemDefinitionId.Value );
-	}
-
 	public enum ClothingCategory : int
 	{
 		None,

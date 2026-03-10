@@ -385,24 +385,4 @@ public partial class ClothingContainer
 	{
 		return CreateFromJson( Avatar.AvatarJson );
 	}
-
-	internal async Task Store( bool active, int slot )
-	{
-		var json = Serialize();
-
-		try
-		{
-			if ( active )
-			{
-				Avatar.AvatarJson = json;
-				await Backend.Storage.Set( (long)Utility.Steam.SteamId, "facepunch.avatar", "avatar.active", "0", json );
-			}
-
-			await Backend.Storage.Set( (long)Utility.Steam.SteamId, "facepunch.avatar", "avatars", $"{slot}", json );
-		}
-		catch ( System.Exception e )
-		{
-			Log.Warning( e, $"Error saving avatar - {e.Message}" );
-		}
-	}
 }

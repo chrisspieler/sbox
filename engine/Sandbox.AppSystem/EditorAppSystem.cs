@@ -7,8 +7,6 @@ public class EditorAppSystem : AppSystem
 {
 	public override void Init()
 	{
-		LoadSteamDll();
-
 		base.Init();
 
 		// Error as early as possible if invalid project

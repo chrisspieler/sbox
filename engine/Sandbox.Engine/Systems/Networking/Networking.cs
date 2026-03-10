@@ -2,13 +2,10 @@
 using Sandbox.Network;
 using Sandbox.Utility;
 using Sentry;
-using Steamworks;
-using Steamworks.Data;
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using Steam = NativeEngine.Steam;
 
 namespace Sandbox;
 
@@ -303,34 +300,7 @@ public static partial class Networking
 
 	internal static void Bootstrap()
 	{
-		var utils = NativeEngine.Steam.SteamNetworkingUtils();
-		if ( !utils.IsValid ) return;
-
-		var sockets = NativeEngine.Steam.SteamNetworkingSockets();
-		if ( !sockets.IsValid ) return;
-
 		Log.Info( "Bootstrap Networking..." );
-
-		// conna: fuck it, let's set these to insane values.
-		var maxBufferSize = 1024 * 1024 * 64;
-		utils.SetConfig( NetConfig.SendBufferSize, maxBufferSize );
-		utils.SetConfig( NetConfig.RecvBufferSize, maxBufferSize );
-		utils.SetConfig( NetConfig.RecvMaxMessageSize, maxBufferSize );
-		utils.SetConfig( NetConfig.RecvBufferMessages, 256 * 256 );
-
-		// conna: allow 120s before a client will disconnect from a timeout.
-		utils.SetConfig( NetConfig.TimeoutConnected, 120 * 1000 );
-
-		// conna: when these two values are not the same, there seems to be a bug that causes the send buffer
-		// to often become clogged up and not clear properly. Ultimately resulting in heavier load and backlog.
-		// These values are ridiculous because there's no way to remove this limit. So let's just make it 1gbps.
-		utils.SetConfig( NetConfig.SendRateMin, 1024 * 1024 * 1024 );
-		utils.SetConfig( NetConfig.SendRateMax, 1024 * 1024 * 1024 );
-
-		utils.SetConfig( NetConfig.P2P_Transport_ICE_Enable, Defines.k_nSteamNetworkingConfig_P2P_Transport_ICE_Enable_All );
-		utils.SetConfig( NetConfig.P2P_STUN_ServerList, "stun.l.google.com:19302,stun1.l.google.com:19302,stun2.l.google.com:19302,stun3.l.google.com:19302,stun4.l.google.com:19302" );
-
-		sockets.StartAuthentication();
 	}
 
 	/// <summary>
@@ -340,30 +310,6 @@ public static partial class Networking
 	internal static void UpdateServerName( string name )
 	{
 		_serverName = name;
-	}
-
-	/// <summary>
-	/// Get the status of our connection to the Steam Datagram Relay service.
-	/// </summary>
-	/// <returns></returns>
-	internal static unsafe SteamNetworkingAvailability GetSteamRelayStatus( out string debugMsg )
-	{
-		var utils = Steam.SteamNetworkingUtils();
-		if ( !utils.IsValid )
-		{
-			debugMsg = "SteamNetworkingUtils is not initialized";
-			return SteamNetworkingAvailability.Unknown;
-		}
-
-		var buffer = new byte[256];
-
-		fixed ( byte* ptr = buffer )
-		{
-
-			var availability = Glue.Networking.GetRelayNetworkStatus( new( ptr ) );
-			debugMsg = Encoding.UTF8.GetString( buffer ).TrimEnd( '\0' );
-			return availability;
-		}
 	}
 
 	/// <summary>
@@ -379,23 +325,15 @@ public static partial class Networking
 	private static int? OldFakeLag { get; set; }
 	private static void UpdateFakeLag()
 	{
-		var utils = NativeEngine.Steam.SteamNetworkingUtils();
-		if ( !utils.IsValid ) return;
-
-
 		if ( OldFakePacketLoss != FakePacketLoss )
 		{
 			var clampedPacketLoss = FakePacketLoss.Clamp( 0, 100 );
-			utils.SetConfig( NetConfig.FakePacketLoss_Send, clampedPacketLoss );
-			utils.SetConfig( NetConfig.FakePacketLoss_Recv, clampedPacketLoss );
 			OldFakePacketLoss = FakePacketLoss;
 		}
 
 		if ( OldFakeLag == FakeLag )
 			return;
 
-		utils.SetConfig( NetConfig.FakePacketLag_Send, FakeLag );
-		utils.SetConfig( NetConfig.FakePacketLag_Recv, FakeLag );
 		OldFakeLag = FakeLag;
 	}
 
@@ -405,7 +343,6 @@ public static partial class Networking
 
 		try
 		{
-			SteamNetwork.RunCallbacks();
 			System?.Tick();
 			System?.SendTableUpdates();
 			System?.SendHeartbeat();
@@ -583,20 +520,15 @@ public static partial class Networking
 		if ( cts?.IsCancellationRequested ?? false )
 			return false;
 
-		var socket = await SteamLobbySocket.Create( config );
-		if ( socket is null )
-		{
-			if ( cts?.IsCancellationRequested ?? false )
-				return false;
-
-			Disconnect();
-			return false;
-		}
+		// TODO: Upon failing to create a socket, disconnect.
+		// Disconnect();
+		// return false;
 
 		if ( cts?.IsCancellationRequested ?? false )
 			return false;
 
-		net.AddSocket( socket );
+		// TODO: Add the second we created.
+		// net.AddSocket( socket );
 
 		//
 		// If runnning in editor, we create a named socket that we can join locally
@@ -669,14 +601,6 @@ public static partial class Networking
 		SentrySdk.AddBreadcrumb( $"Connect to '{target}'", "network.connect" );
 		Assert.IsNull( System );
 
-		//
-		// SteamID
-		//
-		if ( ulong.TryParse( target, out var steamId ) )
-		{
-			return await TryConnectSteamId( steamId );
-		}
-
 		var count = 0;
 
 		while ( count < retries )
@@ -700,7 +624,8 @@ public static partial class Networking
 				{
 					Log.Info( $"Connecting to {target}.." );
 					System = new( "client", Engine.IGameInstanceDll.Current.TypeLibrary );
-					System.Connect( new SteamNetwork.IpConnection( target ) );
+					// TODO: Replace SteamNetwork.IpConnection
+					// System.Connect( new SteamNetwork.IpConnection( target ) );
 					System.UpdateLoading( "Connecting" );
 
 					LastConnectionString = target;
@@ -735,82 +660,6 @@ public static partial class Networking
 				return true;
 		}
 
-		return false;
-	}
-
-	/// <summary>
-	/// Will try to connect to a server. Will return false if failed to connect.
-	/// </summary>
-	public static async Task<bool> TryConnectSteamId( SteamId steamId )
-	{
-		Disconnect();
-
-		if ( steamId.AccountType == SteamId.AccountTypes.Lobby )
-		{
-			return await JoinSteamLobbyServer( steamId );
-		}
-
-		// Don't load no weird maps
-		LaunchArguments.Reset();
-
-		lock ( NetworkThreadLock )
-		{
-			System = new( "steamclient", Engine.IGameInstanceDll.Current.TypeLibrary );
-			System.Connect( new SteamNetwork.IdConnection( steamId, 77 ) );
-			System.UpdateLoading( "Connecting" );
-		}
-
-		LastConnectionString = $"{steamId}";
-
-		var success = await AwaitSuccessfulConnection();
-		if ( success ) return true;
-
-		Disconnect();
-		return false;
-	}
-
-	static async Task<bool> JoinSteamLobbyServer( ulong steamid )
-	{
-		LoadingScreen.IsVisible = true;
-		LoadingScreen.Title = "Connecting";
-
-		var lobbySocket = await SteamLobbySocket.Join( steamid );
-		if ( lobbySocket is null )
-		{
-			LoadingScreen.IsVisible = false;
-
-			// Try another one?
-			return false;
-		}
-
-		Log.Trace( $"Joined Lobby {steamid}" );
-		LoadingScreen.Title = "Connected";
-
-		if ( System is not null )
-		{
-			LoadingScreen.IsVisible = false;
-			Log.Warning( "Network is already active - leaving lobby" );
-			lobbySocket?.Dispose();
-
-			return false;
-		}
-
-		// Don't load no weird maps
-		LaunchArguments.Reset();
-
-		// This lobby should tell us what to do
-		lock ( NetworkThreadLock )
-		{
-			System = new( "lobbyclient", Engine.IGameInstanceDll.Current.TypeLibrary );
-			System.AddSocket( lobbySocket );
-
-			LastConnectionString = $"{steamid}";
-		}
-
-		var success = await AwaitSuccessfulConnection();
-		if ( success ) return true;
-
-		Disconnect();
 		return false;
 	}
 }

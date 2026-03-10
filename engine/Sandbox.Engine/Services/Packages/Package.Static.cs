@@ -1,6 +1,4 @@
-﻿using Refit;
-using Sandbox.Engine;
-using Sandbox.Protobuf;
+﻿using Sandbox.Engine;
 using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Threading;
@@ -11,11 +9,6 @@ public partial class Package
 {
 	static ConcurrentDictionary<string, Package> Packages = new( StringComparer.OrdinalIgnoreCase );
 	static ConcurrentDictionary<string, Package> PartialPackages = new( StringComparer.OrdinalIgnoreCase );
-
-	static Package()
-	{
-		Sandbox.Services.Messaging.OnMessage += HandleMessage;
-	}
 
 	internal static void ClearCache()
 	{
@@ -131,97 +124,6 @@ public partial class Package
 	/// <summary>
 	/// Find package information
 	/// </summary>
-	public static async Task<Package> FetchAsync( string identString, bool partial ) => await FetchAsync( identString, partial, true );
-
-	/// <summary>
-	/// Find package information
-	/// </summary>
-	public static async Task<Package> FetchAsync( string identString, bool partial, bool useCache )
-	{
-		// split ident into parts
-		if ( !TryParseIdent( identString, out var ident ) && !ident.local )
-		{
-			Log.Warning( $"Unable to fetch package info for {identString}: invalid ident." );
-			return null;
-		}
-
-		Package package = default;
-
-		if ( useCache && TryGetCached( identString, out package, partial ) )
-			return package;
-
-		// GetCached should have returned the local mock package
-		if ( ident.local || string.Compare( "local", ident.org, StringComparison.OrdinalIgnoreCase ) == 0 )
-		{
-			return null;
-		}
-
-		if ( Backend.Package is null )
-		{
-			Log.Warning( $"Unable to fetch package info for {identString}: backend not available." );
-			return null;
-		}
-
-		try
-		{
-			var packageIdent = $"{ident.org}.{ident.package}";
-			if ( ident.version is not null ) packageIdent += $"#{ident.version}";
-			var result = await Backend.Package.Get( packageIdent );
-			if ( result is null ) return null;
-
-
-			if ( package is not RemotePackage )
-			{
-				package = new RemotePackage();
-			}
-
-			(package as RemotePackage).UpdateFromDto( result );
-		}
-		catch ( HttpRequestException e )
-		{
-			Log.Warning( e, $"Failed to fetch package info for {identString}: {e.Message}" );
-			return null;
-		}
-		catch ( ApiException e )
-		{
-			if ( e.StatusCode == System.Net.HttpStatusCode.NotFound )
-			{
-				Log.Warning( $"Failed to fetch package info for {identString}: package not found." );
-			}
-			else
-			{
-				Log.Warning( e, $"Failed to fetch package info for {identString}: {e.Message}" );
-			}
-
-			return null;
-		}
-
-		if ( package is not null )
-		{
-			Cache( package, false, ident.version );
-		}
-		else
-		{
-			Log.Warning( $"Failed to fetch package info for {identString}." );
-		}
-
-		return package;
-	}
-
-	/// <summary>
-	/// Mount a package by ident. This is the same as FetchAsync but it also mounts the package, which means it will be available for use right away.
-	/// If you just want the package information, use FetchAsync.
-	/// </summary>
-	public static async Task<Package> MountAsync( string identString, bool partial )
-	{
-		var pack = await FetchAsync( identString, partial, false );
-		await pack.MountAsync();
-		return pack;
-	}
-
-	/// <summary>
-	/// Find package information
-	/// </summary>
 	public static bool TryGetCached( string identString, out Package package, bool allowPartial = true )
 	{
 		package = null;
@@ -251,16 +153,6 @@ public partial class Package
 
 		return false;
 	}
-
-
-	/// <summary>
-	/// Find package information
-	/// </summary>
-	public static async Task<Package> Fetch( string identString, bool partial )
-	{
-		return await FetchAsync( identString, partial );
-	}
-
 	/// <summary>
 	/// If we have this package information, try to get its name
 	/// </summary>
@@ -307,48 +199,6 @@ public partial class Package
 
 			yield return addon.Package;
 		}
-	}
-
-	/// <summary>
-	/// Retrieve a list of packages
-	/// </summary>
-	public static async Task<FindResult> FindAsync( string query, int take = 200, int skip = 0, CancellationToken token = default )
-	{
-		ArgumentException.ThrowIfNullOrEmpty( query );
-
-		// If the query is for local, we redirect to the local packages
-		if ( query.Split( ' ' ).Contains( "local:true" ) )
-		{
-			var list = GetMockPackages( query ).ToArray();
-
-			return new FindResult
-			{
-				Milliseconds = 10,
-				Packages = list
-			};
-		}
-
-		try
-		{
-			var l = await Backend.Package.Find( query, take, skip );
-			return FindResult.FromDto( l );
-		}
-		catch ( ApiException )
-		{
-			return new FindResult { Packages = Array.Empty<Package>(), TotalCount = 0, Tags = Array.Empty<TagEntry>(), Orders = Array.Empty<SortOrder>() };
-		}
-	}
-
-	/// <summary>
-	/// Retrieve a list of packages, organised into groups, for discovery
-	/// </summary>
-	public static async Task<ListResult> ListAsync( string id, CancellationToken token = default )
-	{
-		var result = await Backend.Package.GetList( id );
-		if ( result.Groupings is null )
-			return null;
-
-		return ListResult.From( result );
 	}
 
 	/// <summary>
@@ -441,62 +291,5 @@ public partial class Package
 		{
 			action( p2 );
 		}
-	}
-
-	static void HandleMessage( Sandbox.Services.Messaging.Message msg )
-	{
-		if ( msg.Data is PackageMsg.UsageChanged usageChanged )
-		{
-			UpdatePackage( usageChanged.PackageIdent, p =>
-			{
-				var u = p.Usage;
-				u.UsersNow = usageChanged.UserCount;
-				p.Usage = u;
-			} );
-
-			IMenuDll.Current?.RunEvent( "package.update.users", usageChanged.PackageIdent, usageChanged.UserCount );
-		}
-
-		if ( msg.Data is PackageMsg.FavouritesChanged favouriteChanged )
-		{
-			UpdatePackage( favouriteChanged.PackageIdent, p => p.Favourited = (int)favouriteChanged.Value );
-			IMenuDll.Current?.RunEvent( "package.update.favourites", favouriteChanged.PackageIdent, favouriteChanged.Value );
-		}
-
-		if ( msg.Data is PackageMsg.VotesChanged votesChanged )
-		{
-			UpdatePackage( votesChanged.PackageIdent, p =>
-			{
-				p.VotesUp = (int)votesChanged.VotesUp;
-				p.VotesDown = (int)votesChanged.VotesDown;
-			} );
-		}
-
-		if ( msg.Data is PackageMsg.Update packageUpdated )
-		{
-			ClearCache( packageUpdated.PackageIdent );
-		}
-
-		if ( msg.Data is PackageMsg.Changed packageChanged )
-		{
-			ClearCache( packageChanged.PackageIdent );
-		}
-	}
-
-
-	/// <summary>
-	/// Get package version list
-	/// </summary>
-	public static async Task<List<IRevision>> FetchVersions( string identString, CancellationToken token = default )
-	{
-		// split ident into parts
-		if ( !TryParseIdent( identString, out var ident ) || ident.local )
-			return null;
-
-		var result = await Backend.Version.GetList( $"{ident.org}.{ident.package}" );
-		if ( result is null )
-			return null;
-
-		return result.Select( x => PackageRevision.FromDto( x ) ).Cast<IRevision>().ToList();
 	}
 }

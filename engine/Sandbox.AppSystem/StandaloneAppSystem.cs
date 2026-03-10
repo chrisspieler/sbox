@@ -19,8 +19,6 @@ public class StandaloneAppSystem : AppSystem
 
 	public override void Init()
 	{
-		LoadSteamDll();
-
 		base.Init();
 
 		// Standalone setup

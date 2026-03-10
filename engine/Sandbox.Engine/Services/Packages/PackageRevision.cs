@@ -22,44 +22,4 @@ internal sealed class PackageRevision : Package.IRevision
 	public string Changes { get; set; }
 
 	ManifestSchema _manifest;
-
-	/// <summary>
-	/// The manifest might not be immediately available until you've downloaded it
-	/// </summary>
-	public async Task DownloadManifestAsync( CancellationToken token )
-	{
-		if ( _manifest != null )
-			return;
-
-		// empty manifest fallback
-		_manifest = new ManifestSchema();
-
-		if ( string.IsNullOrEmpty( ManifestUrl ) )
-			return;
-
-		try
-		{
-			_manifest = await Utility.Web.DownloadJson<ManifestSchema>( ManifestUrl );
-		}
-		catch ( System.Exception e )
-		{
-			Log.Warning( e, $"Manifest: Couldn't deserialize schema ({e.Message})" );
-		}
-	}
-
-	internal static PackageRevision FromDto( Sandbox.Services.PackageVersion x )
-	{
-		return new PackageRevision
-		{
-			FileCount = x.FileCount,
-			AssetVersionId = x.AssetVersionId,
-			TotalSize = x.TotalSize,
-			ManifestUrl = x.ManifestUrl,
-			Created = x.Created,
-			Summary = x.Changes,
-			EngineVersion = x.EngineVersion,
-			Meta = x.Meta,
-			Changes = x.Changes,
-		};
-	}
 }

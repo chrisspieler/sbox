@@ -135,12 +135,6 @@ internal static class EngineLoop
 		ThreadSafe.AssertIsMainThread();
 
 		//
-		// Let the Steam API and Steam Game Server API think
-		//
-		NativeEngine.Steam.SteamGameServer_RunCallbacks();
-		NativeEngine.Steam.SteamAPI_RunCallbacks();
-
-		//
 		// Update performance stats (should be called every frame)
 		//
 		UpdatePerformance();
@@ -209,13 +203,6 @@ internal static class EngineLoop
 		//
 		Logging.PushQueuedMessages();
 
-		//
-		// Allow the events to push if they want
-		//
-		Api.Events.TickEvents();
-		Api.Stats.TickStats();
-		Sandbox.Services.Messaging.ProcessMessages();
-
 		// Simulate UI last. This works out all the styles and shit, so we want
 		// that to be reflected right BEFORE the frame is rendered.
 		using ( PerformanceStats.Timings.Ui.Scope() )
@@ -237,9 +224,6 @@ internal static class EngineLoop
 		{
 			Engine.InputRouter.Frame();
 		}
-
-		// Keep room up to date
-		PartyRoom.Current?.Tick();
 
 		Audio.AudioEngine.Tick();
 	}
@@ -307,7 +291,6 @@ internal static class EngineLoop
 	static unsafe void UpdatePerformance()
 	{
 		PerformanceStats.Frame();
-		Api.Performance.Frame();
 	}
 
 

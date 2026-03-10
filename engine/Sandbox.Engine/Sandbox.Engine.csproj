@@ -1,6 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-	<Import Project="../CodeGen.Targets" />
 	
 	<PropertyGroup>
 		<VersionPrefix>1.0.1</VersionPrefix>
@@ -56,7 +54,6 @@
 		<ProjectReference Include="../Sandbox.Filesystem/Sandbox.Filesystem.csproj" />
 		<ProjectReference Include="../Sandbox.Hotload/Sandbox.Hotload.csproj" />
 		<ProjectReference Include="../Sandbox.Reflection/Sandbox.Reflection.csproj" />
-		<ProjectReference Include="../Sandbox.Services/Sandbox.Services.csproj" />
 		<ProjectReference Include="../Sandbox.SolutionGenerator/Sandbox.SolutionGenerator.csproj" />
 		<ProjectReference Include="../Sandbox.System/Sandbox.System.csproj" />
 		<ProjectReference Include="../Sandbox.Generator/Sandbox.Generator.csproj" />

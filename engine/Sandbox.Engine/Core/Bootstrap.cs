@@ -4,7 +4,6 @@ using Sandbox.Network;
 using Sandbox.Utility;
 using Sandbox.VR;
 using Sentry;
-using Steamworks;
 using System.Diagnostics;
 using System.Threading;
 
@@ -217,18 +216,6 @@ internal static class Bootstrap
 			{
 				using var x = StartupTiming?.ScopeTimer( $"IGameMenuDll Bootstrap" );
 				SyncContext.RunBlocking( IGameInstanceDll.Current.Initialize() );
-			}
-
-			if ( SteamClient.IsValid )
-			{
-				SentrySdk.ConfigureScope( scope =>
-				{
-					scope.User = new SentryUser
-					{
-						Username = SteamClient.Name,
-						Id = SteamClient.SteamId.ToString()
-					};
-				} );
 			}
 
 			Internal.TypeLibrary.OnClassName = x => StringToken.FindOrCreate( x );

@@ -26,11 +26,7 @@ internal class BuildManaged( string name, bool clean = false ) : Step( name )
 			if ( !Utility.RunDotnetCommand( engineDir, "restore" ) )
 				return ExitCode.Failure;
 
-			Log.Info( "Step 3: Build CodeGen.exe" );
-			if ( !Utility.RunDotnetCommand( engineDir, "build Tools/CodeGen/ -o Tools/CodeGen/bin" ) )
-				return ExitCode.Failure;
-
-			Log.Info( "Step 4: Clear managed folder" );
+			Log.Info( "Step 3: Clear managed folder" );
 			string managedDir = Path.Combine( rootDir, "game", "bin", "managed" );
 			if ( Directory.Exists( managedDir ) )
 			{
@@ -52,7 +48,7 @@ internal class BuildManaged( string name, bool clean = false ) : Step( name )
 				Directory.CreateDirectory( managedDir );
 			}
 
-			Log.Info( "Step 5: Build Managed" );
+			Log.Info( "Step 4: Build Managed" );
 			if ( !Utility.RunDotnetCommand( engineDir, "build -c Release Sandbox-Engine.slnx -p:TreatWarningsAsErrors=true" ) )
 				return ExitCode.Failure;
 

@@ -15,10 +15,6 @@ public static class Standalone
 		if ( !Application.IsStandalone )
 			return;
 
-		//
-		// Init Steam
-		//
-		Steamworks.SteamClient.Init( (int)Application.AppId );
 	}
 
 	internal static void SetupFromManifest( StandaloneManifest manifest )

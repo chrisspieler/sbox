@@ -17,7 +17,6 @@ public class GameAppSystem : AppSystem
 {
 	public override void Init()
 	{
-		LoadSteamDll();
 		TestSystemRequirements();
 
 		base.Init();

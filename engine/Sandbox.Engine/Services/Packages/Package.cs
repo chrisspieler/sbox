@@ -225,24 +225,6 @@ public partial class Package
 	}
 
 	/// <summary>
-	/// True if this asset is in our favourite list.
-	/// </summary>
-	[JsonIgnore]
-	public bool IsFavourite => AccountInformation.IsFavourite( FullIdent );
-
-	/// <summary>
-	/// True if we're a member of this package's organization.
-	/// </summary>
-	[JsonIgnore]
-	public bool CanEdit => Org != null && AccountInformation.HasOrganization( Org.Ident );// || AccountInformation.HasOrganization( "facepunch" );
-
-	/// <summary>
-	/// A link to this asset on our backend
-	/// </summary>
-	[JsonIgnore]
-	public string Url => $"https://sbox.game/{Org.Ident}/{Ident}";
-
-	/// <summary>
 	/// When the entry was last updated. If these are different between packages
 	/// then something updated on the backend.
 	/// </summary>
@@ -267,23 +249,6 @@ public partial class Package
 	/// How many packages we're referenced by (roughly)
 	/// </summary>
 	public int Referenced { get; set; }
-
-	public record struct ReviewStats( int Total, float Score );
-
-	/// <summary>
-	/// Stats for the reviews. Gives the number of reviews, and the fraction of the total score.
-	/// </summary>
-	public ReviewStats Reviews { get; set; }
-
-	/// <summary>
-	/// What fraction of users got errors from this package in the last day
-	/// </summary>
-	public float ErrorRate { get; set; }
-
-	/// <summary>
-	/// The latest news post created by this package
-	/// </summary>
-	public Sandbox.Services.News LatestNewsPost { get; set; }
 
 	/// <summary>
 	/// Represents an organization on Asset Party. Organization owns packages.
@@ -324,18 +289,6 @@ public partial class Package
 		/// When the organization was created.
 		/// </summary>
 		public DateTimeOffset Created { get; set; }
-
-		internal static Organization FromDto( Services.OrganizationDto x )
-		{
-			var o = new Organization();
-			o.Ident = x.Ident;
-			o.Title = x.Title;
-			o.SocialTwitter = x.Twitter;
-			o.SocialWeb = x.WebUrl;
-			o.Description = x.Description;
-			o.Thumb = x.Thumb;
-			return o;
-		}
 	}
 
 	public enum Type : int
@@ -407,11 +360,6 @@ public partial class Package
 		/// you should call DownloadManifestAsync first.
 		/// </summary>
 		public ManifestSchema Manifest { get; }
-
-		/// <summary>
-		/// The manifest will not be immediately available until you've downloaded it.
-		/// </summary>
-		public Task DownloadManifestAsync( CancellationToken token = default );
 	}
 
 	/// <summary>

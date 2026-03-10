@@ -102,28 +102,6 @@ public static partial class MenuUtility
 		} );
 	}
 
-	static List<Friend> _friendList;
-
-	/// <summary>
-	/// Get all friends.
-	/// </summary>
-	public static IEnumerable<Friend> Friends
-	{
-		get
-		{
-			//
-			// querying this once should be enough, unless they add a new friend or something
-			//
-			if ( _friendList is null )
-			{
-				_friendList = Steamworks.SteamFriends.GetFriends().Select( x => new Friend( x ) ).ToList();
-			}
-
-			return _friendList;
-		}
-	}
-
-
 	/// <summary>
 	/// Number of seconds escape has been held down
 	/// </summary>

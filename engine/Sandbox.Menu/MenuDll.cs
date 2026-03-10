@@ -4,7 +4,6 @@ using Sandbox.Services;
 using Sandbox.Tasks;
 using Sandbox.UI;
 using Sandbox.Utility;
-using Steamworks;
 using System;
 using IMenuSystem = Sandbox.Internal.IMenuSystem;
 using IModalSystem = Sandbox.Modals.IModalSystem;
@@ -215,9 +214,6 @@ internal sealed class MenuDll : IMenuDll
 			IMenuSystem.Current?.Shutdown();
 			IMenuSystem.Current = null;
 
-			// Unregister messaging
-			Sandbox.Services.Messaging.OnMessage -= OnMessageFromBackend;
-
 			// Save and dispose cookies
 			Game.Cookies?.Save();
 			Game.Cookies = null;
@@ -232,12 +228,6 @@ internal sealed class MenuDll : IMenuDll
 
 			Loader?.Dispose();
 			Loader = null;
-
-			// Shutdown Steamworks interfaces
-			if ( !Application.IsEditor )
-			{
-				Steamworks.SteamClient.Cleanup();
-			}
 
 			// Expire async context to prevent lingering tasks
 			AsyncContext.Expire( null );

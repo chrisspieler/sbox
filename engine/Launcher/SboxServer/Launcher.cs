@@ -22,7 +22,6 @@ public class DedicatedServerAppSystem : AppSystem
 
 	public override void Init()
 	{
-		LoadSteamDll();
 		TestSystemRequirements();
 
 		base.Init();

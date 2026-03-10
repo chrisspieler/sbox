@@ -69,6 +69,5 @@ internal partial class BytePack
 		Add( new PodPacker<Ray>( Identifier.Ray ) );
 		Add( new PodPacker<Line>( Identifier.Line ) );
 		Add( new PodPacker<Matrix>( Identifier.Matrix ) );
-		Add( new PodPacker<SteamId>( Identifier.SteamId ) );
 	}
 }

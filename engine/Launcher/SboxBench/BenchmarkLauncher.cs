@@ -18,7 +18,6 @@ public class GameAppSystem : AppSystem
 {
 	public override void Init()
 	{
-		LoadSteamDll();
 		base.Init();
 
 		Environment.SetEnvironmentVariable( "SBOX_MODE", "BENCHMARK" );
