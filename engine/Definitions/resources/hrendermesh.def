@@ -1,5 +1,0 @@
-
-[ResourceHandle:HRenderMesh_Internal]
-native class CRenderMesh as NativeEngine.IMesh
-{
-}

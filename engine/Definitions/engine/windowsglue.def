@@ -1,7 +1,0 @@
-
-include "sbox/windowsglue.h"
-
-native static class WindowsGlue as NativeEngine.WindowsGlue
-{
-	string FindFile();
-}

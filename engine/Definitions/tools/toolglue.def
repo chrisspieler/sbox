@@ -1,6 +1,0 @@
-﻿
-
-native static class ToolGlue as  Native.ToolGlue
-{
-	static void ShowTool( string nam );
-}

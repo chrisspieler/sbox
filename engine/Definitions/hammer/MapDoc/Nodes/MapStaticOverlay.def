@@ -1,8 +1,0 @@
-﻿
-#include "mapdoclib/mapstaticoverlay.h"
-
-[Handle:Editor.MapDoc.MapStaticOverlay]
-native class CMapStaticOverlay as NativeMapDoc.CMapStaticOverlay : CMapMesh
-{
-	void CreateCenteredQuad( float flWidth, float flHeight, string pMaterialName );
-}
